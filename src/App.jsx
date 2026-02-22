@@ -34,7 +34,12 @@ function App() {
 
   const copyPasswordToClipBoard = () => {
     window.navigator.clipboard.writeText(password);
-  }
+
+    if (inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -50,10 +55,6 @@ function App() {
             type="text"
             value={password}
             readOnly
-            onClick={() => {
-              inputRef.current.focus();
-              inputRef.current.select();
-            }}
             className="flex-1 px-4 py-3 rounded-lg bg-gray-100 text-gray-700 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 transition cursor-pointer"
           />
 
