@@ -1,122 +1,72 @@
 import { useCallback, useState, useEffect, useRef } from "react";
-
+import CurrencyInfo from "./Hooks/CurrencyInfo";
+import InputBox from "./components/InputBox";
+import purpleBG from "./assets/purpleBG.jpg";
 function App() {
-  const [password, setPassword] = useState("");
-  const [length, setLength] = useState(5);
-  const [numAllow, setNumAllow] = useState(false);
-  const [charAllow, setCharAllow] = useState(false);
-
-  const inputRef = useRef(null);
-
-  const getRandom = useCallback(() => {
-    let pass = "";
-    let str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
-    if (numAllow) {
-      str += "0123456789";
-    }
-
-    if (charAllow) {
-      str += "!@#$%^&*()[]{}?`~";
-    }
-
-    for (let i = 0; i < length; i++) {
-      let pos = Math.floor(Math.random() * str.length);
-      pass += str.charAt(pos);
-    }
-
-    setPassword(pass);
-  }, [length, numAllow, charAllow]);
+  const [amount, setAmount] = useState(0);
+  const [from, setFrom] = useState("USD");
+  const [to, setTo] = useState("INR");
+  const [value, setValue] = useState(0);
+  const [result, setResult] = useState(0);
+  const currencyInfo = CurrencyInfo(from);
+  const codes = Object.keys(currencyInfo);
 
   useEffect(() => {
-    getRandom();
-  }, [length, numAllow, charAllow, getRandom]);
-
-  const copyPasswordToClipBoard = () => {
-    window.navigator.clipboard.writeText(password);
-
-    if (inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
+    if (currencyInfo && currencyInfo[to]) {
+      const rate = currencyInfo[to].value;
+      setResult(amount * rate);
     }
-  };
-
+  }, [to, from, amount, currencyInfo]);
+  function swap() {
+    const temp = from;
+    setFrom(to);
+    setTo(temp);
+  }
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-100 p-8 space-y-6">
-
-        <h1 className="text-2xl font-semibold text-gray-800 text-center tracking-tight">
-          Password Generator
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-[#1a0a1f] via-[#140d2e] to-[#090414]">
+      <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-xl p-6 space-y-6 shadow-md">
+        <h1 className="text-2xl font-semibold text-center text-purple-400">
+          Currency Converter
         </h1>
 
-        <div className="flex gap-3">
-          <input
-            ref={inputRef}
-            type="text"
-            value={password}
-            readOnly
-            className="flex-1 px-4 py-3 rounded-lg bg-gray-100 text-gray-700 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 transition cursor-pointer"
-          />
+        <InputBox
+          block="From"
+          amount={amount}
+          onAmountChange={(newAmount) => {
+            setAmount(newAmount);
+          }}
+          currencyOptions={codes}
+          onCurrencyChange={(newCurr) => {
+            setFrom(newCurr);
+          }}
+          isDisabled={false}
+          curr={from}
+        />
 
+        <div className="flex justify-center">
           <button
-            onClick={copyPasswordToClipBoard}
-            className="px-4 py-3 rounded-lg bg-gray-900 text-white shadow-sm 
-                       hover:shadow-md hover:bg-gray-800 
-                       active:scale-95 active:shadow-sm 
-                       transition-all duration-150"
+            onClick={() => {
+              swap();
+            }}
+            className="px-5 py-2 text-sm rounded-md bg-purple-600 hover:bg-purple-500 text-white transition"
           >
-            Copy
+            Swap
           </button>
         </div>
 
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Length</span>
-            <span className="font-medium text-gray-800">{length}</span>
-          </div>
-
-          <input
-            type="range"
-            min="4"
-            max="100"
-            value={length}
-            onChange={(e) => setLength(Number(e.target.value))}
-            className="w-full accent-gray-800"
-          />
-        </div>
-
-        <div className="flex justify-between text-sm text-gray-700">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={numAllow}
-              onChange={() => setNumAllow(prev => !prev)}
-              className="accent-gray-800"
-            />
-            Numbers
-          </label>
-
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={charAllow}
-              onChange={() => setCharAllow(prev => !prev)}
-              className="accent-gray-800"
-            />
-            Special Characters
-          </label>
-        </div>
-
-        <button
-          onClick={getRandom}
-          className="w-full py-3 rounded-lg bg-gray-900 text-white shadow-sm 
-                     hover:shadow-md hover:bg-gray-800 
-                     active:scale-95 active:shadow-sm 
-                     transition-all duration-150 font-medium"
-        >
-          Generate Password
-        </button>
-
+        <InputBox
+          block="To"
+          amount={result}
+          onAmountChange={(newAmount) => {
+            setAmount(newAmount);
+          }}
+          currencyOptions={codes}
+          onCurrencyChange={(newCurr) => {
+            setTo(newCurr);
+          }}
+          isDisabled={true}
+          curr={to}
+        />
       </div>
     </div>
   );
